@@ -4,23 +4,34 @@ import org.example.entity.Customer;
 import org.example.entity.Order;
 import org.example.entity.Product;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 
 public class JsonSerializerImpl implements JsonSerializer {
     @Override
-    public String serializer(Object object) throws IllegalAccessException {
-        LinkedHashMap<String, Object> jsonElementsMap = getStringObjectLinkedHashMap(object);
-        return getString(jsonElementsMap);
+    public String serializer(Object object) {
+        try {
+            return serializeObject(object);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);git
+        }
     }
 
     @Override
-    public <T> T deSerializer(String jsonString, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException,
-            InstantiationException, IllegalAccessException {
+    public <T> T deSerializer(String jsonString, Class<T> clazz) {
+        try {
+            return getT(jsonString, clazz);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
+                 | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static <T> T getT(String jsonString, Class<T> clazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         LinkedHashMap<String, Object> jsonElementsMap = parseJson(jsonString);
         Constructor<T> constructor = clazz.getConstructor();
         T object = constructor.newInstance();
@@ -31,14 +42,15 @@ public class JsonSerializerImpl implements JsonSerializer {
             try {
                 setFieldValue(clazz, field, setterName, jsonElementsMap, fieldName, object);
             } catch (IllegalAccessException | InvocationTargetException e) {
-               throw new RuntimeException();
+                throw new RuntimeException();
             }
         }
 
         return object;
     }
 
-    private static <T> void setFieldValue(Class<T> clazz, Field field, String setterName, LinkedHashMap<String, Object> jsonElementsMap, String fieldName, T object) throws IllegalAccessException, InvocationTargetException {
+    private static <T> void setFieldValue(Class<T> clazz, Field field, String setterName, LinkedHashMap<String, Object> jsonElementsMap,
+                                          String fieldName, T object) throws IllegalAccessException, InvocationTargetException {
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             if (method.getName().equals(setterName)) {
@@ -48,25 +60,30 @@ public class JsonSerializerImpl implements JsonSerializer {
                         UUID uuid = UUID.fromString((String) fieldValue);
                         method.invoke(object, uuid);
                     } else if (field.getType() == Double.class) {
-                        if (fieldValue instanceof Double) {
-                            method.invoke(object, fieldValue);
-                        } else if (fieldValue instanceof String) {
-                            Double price = Double.parseDouble((String) fieldValue);
-                            method.invoke(object, price);
-                        }
+                        Double price = Double.parseDouble((String) fieldValue);
+                        method.invoke(object, price);
                     } else if (field.getType() == String.class) {
-
-                        if (fieldValue instanceof String) {
-                            String name = (String) fieldValue;
+                        if (fieldValue instanceof String name) {
                             method.invoke(object, name);
                         }
+                    } else if (field.getType() == LocalDate.class) {
+                        System.out.println("LocalDate");
+                        System.out.println(fieldValue);
+                        LocalDate localDate = LocalDate.parse((String) fieldValue);
+                        method.invoke(object, localDate);
+                    } else if (field.getType() == OffsetDateTime.class) {
+                        System.out.println("Off");
+                        System.out.println(fieldValue);
+                        LocalDate localDate = LocalDate.parse((String) fieldValue);
+                        method.invoke(object, localDate);
                     }
                 }
             }
         }
     }
 
-    private LinkedHashMap<String, Object> parseJson(String jsonString) {
+
+    private static LinkedHashMap<String, Object> parseJson(String jsonString) {
         LinkedHashMap<String, Object> jsonMap = new LinkedHashMap<>();
         jsonString = jsonString.trim();
         if (jsonString.startsWith("{") && jsonString.endsWith("}")) {
@@ -84,7 +101,7 @@ public class JsonSerializerImpl implements JsonSerializer {
         return jsonMap;
     }
 
-    private String getString(LinkedHashMap<String, Object> jsonElementsMap) {
+    private static String getJsonString(LinkedHashMap<String, Object> jsonElementsMap) {
         StringBuilder jsonString = new StringBuilder("{");
 
         boolean firstEntry = true;
@@ -118,30 +135,31 @@ public class JsonSerializerImpl implements JsonSerializer {
         return jsonString.toString();
     }
 
-    private LinkedHashMap<String, Object> getStringObjectLinkedHashMap(Object object) throws IllegalAccessException {
+    private static LinkedHashMap<String, Object> getStringObjectLinkedHashMap(Object object) throws
+            IllegalAccessException {
         Class<?> clazz = object.getClass();
         LinkedHashMap<String, Object> jsonElementsMap = new LinkedHashMap<>();
         for (Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
             String fileName = field.getName();
             Object fieldValue = field.get(object);
-
             if (fieldValue == null) {
                 jsonElementsMap.put(fileName, null);
             } else if (field.getType().equals(String.class) || field.getType().equals(Integer.class)
                     || field.getType().equals(Double.class) || field.getType().equals(Float.class)
                     || field.getType().equals(Long.class) || field.getType().equals(Boolean.class)
-                    || field.getType().isEnum() || field.getType().isArray()) {
+                    || field.getType().isEnum() || field.getType().isArray() || field.getType().equals(OffsetDateTime.class)
+                    || field.getType().equals(LocalDate.class)) {
                 jsonElementsMap.put(fileName, fieldValue);
             } else if (field.getType().equals(UUID.class)) {
                 jsonElementsMap.put(fileName, fieldValue.toString());
             } else if (field.getType().equals(Order.class) || field.getType().equals(Product.class) || field.getType().equals(Customer.class)) {
-                String recursive = serializer(fieldValue);
+                String recursive = serializeObject(fieldValue);
                 jsonElementsMap.put(fileName, recursive);
             } else if (fieldValue instanceof List<?> list) {
                 List<String> listJson = new ArrayList<>();
                 for (Object item : list) {
-                    String itemsJson = serializer(item);
+                    String itemsJson = serializeObject(item);
                     listJson.add(itemsJson);
                 }
                 jsonElementsMap.put(fileName, listJson);
@@ -149,14 +167,14 @@ public class JsonSerializerImpl implements JsonSerializer {
                 List<String> listJson = new ArrayList<>();
                 for (Object key : map.keySet()) {
                     Object item = map.get(key);
-                    String itemJson = serializer(item);
+                    String itemJson = serializeObject(item);
                     listJson.add(itemJson);
                 }
                 jsonElementsMap.put(fileName, listJson);
             } else if (fieldValue instanceof Set<?> set) {
                 List<String> listJson = new ArrayList<>();
                 for (Object key : set) {
-                    String itemJson = serializer(key);
+                    String itemJson = serializeObject(key);
                     listJson.add(itemJson);
                 }
                 jsonElementsMap.put(fileName, listJson);
@@ -165,5 +183,10 @@ public class JsonSerializerImpl implements JsonSerializer {
             }
         }
         return jsonElementsMap;
+    }
+
+    private static String serializeObject(Object object) throws IllegalAccessException {
+        LinkedHashMap<String, Object> jsonElementsMap = getStringObjectLinkedHashMap(object);
+        return getJsonString(jsonElementsMap);
     }
 }
