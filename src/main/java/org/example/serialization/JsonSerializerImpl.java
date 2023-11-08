@@ -1,5 +1,6 @@
 package org.example.serialization;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.entity.Customer;
 import org.example.entity.Order;
 import org.example.entity.Product;
@@ -13,25 +14,25 @@ import java.util.*;
 
 public class JsonSerializerImpl implements JsonSerializer {
     @Override
-    public String serializer(Object object) {
-        try {
-            return serializeObject(object);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);git
+    public String serializer(Object object) throws IllegalAccessException {
+        if (object == null) {
+            throw new NullPointerException();
         }
+        return serializeObject(object);
     }
 
     @Override
-    public <T> T deSerializer(String jsonString, Class<T> clazz) {
-        try {
-            return getT(jsonString, clazz);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
-                 | InvocationTargetException e) {
-            throw new RuntimeException(e);
+    public <T> T deSerializer(String jsonString, Class<T> clazz) throws InvocationTargetException,
+            NoSuchMethodException, InstantiationException, IllegalAccessException {
+        if (jsonString == null || clazz == null) {
+            throw new NullPointerException();
         }
+        parseStringToObject(jsonString, clazz);
+        return parseStringToObject(jsonString, clazz);
     }
 
-    private static <T> T getT(String jsonString, Class<T> clazz) throws NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    private static <T> T parseStringToObject(String jsonString, Class<T> clazz) throws NoSuchMethodException,
+            InstantiationException, IllegalAccessException, InvocationTargetException {
         LinkedHashMap<String, Object> jsonElementsMap = parseJson(jsonString);
         Constructor<T> constructor = clazz.getConstructor();
         T object = constructor.newInstance();
@@ -39,13 +40,8 @@ public class JsonSerializerImpl implements JsonSerializer {
         for (Field field : clazz.getDeclaredFields()) {
             String fieldName = field.getName();
             String setterName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            try {
-                setFieldValue(clazz, field, setterName, jsonElementsMap, fieldName, object);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException();
-            }
+            setFieldValue(clazz, field, setterName, jsonElementsMap, fieldName, object);
         }
-
         return object;
     }
 
@@ -102,6 +98,9 @@ public class JsonSerializerImpl implements JsonSerializer {
     }
 
     private static String getJsonString(LinkedHashMap<String, Object> jsonElementsMap) {
+        if (jsonElementsMap == null) {
+            throw new NullPointerException();
+        }
         StringBuilder jsonString = new StringBuilder("{");
 
         boolean firstEntry = true;
@@ -137,6 +136,9 @@ public class JsonSerializerImpl implements JsonSerializer {
 
     private static LinkedHashMap<String, Object> getStringObjectLinkedHashMap(Object object) throws
             IllegalAccessException {
+        if (object == null) {
+            throw new NullPointerException();
+        }
         Class<?> clazz = object.getClass();
         LinkedHashMap<String, Object> jsonElementsMap = new LinkedHashMap<>();
         for (Field field : clazz.getDeclaredFields()) {
@@ -186,6 +188,9 @@ public class JsonSerializerImpl implements JsonSerializer {
     }
 
     private static String serializeObject(Object object) throws IllegalAccessException {
+        if (object == null) {
+            throw new NullPointerException();
+        }
         LinkedHashMap<String, Object> jsonElementsMap = getStringObjectLinkedHashMap(object);
         return getJsonString(jsonElementsMap);
     }
