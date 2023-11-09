@@ -3,7 +3,6 @@ package org.example.serialization;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.entity.Order;
-import org.example.entity.Order;
 import org.example.util.TestDataProduct;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,12 +54,20 @@ public class JsonSerializerOrderTest {
                         "Expected Order with null"
                 ),
                 Arguments.of(
-                        TestDataProduct.builder().build().setProductsList(null).buildOrder(),
-                        "Expected Order with products null"
+                        TestDataProduct.builder().build().setFirstName(null).buildOrder(),
+                        "Expected Order with firstName null"
                 ),
                 Arguments.of(
-                        TestDataProduct.builder().build().setOffsetDateTime(null).buildOrder(),
-                        "Expected Order with OffsetDateTime null"
+                        TestDataProduct.builder().build().setLastName(null).buildOrder(),
+                        "Expected Order with lastName null"
+                ),
+                Arguments.of(
+                        TestDataProduct.builder().build().setDateBirth(null).buildOrder(),
+                        "Expected Order with dateBirth null"
+                ),
+                Arguments.of(
+                        TestDataProduct.builder().build().setOrders(null).buildOrder(),
+                        "Expected Order with orders null"
                 )
         );
     }
@@ -75,73 +82,125 @@ public class JsonSerializerOrderTest {
 
     @Test
     void serializerWithUUIDisNull() throws JsonProcessingException, IllegalAccessException {
-        Order product = TestDataProduct.builder().build().setUuid(null).buildOrder();
-        when(jsonSerializer.serializer(product)).thenReturn("Expected JSON String");
-        when(objectMapper.writeValueAsString(product)).thenReturn("Expected JSON String");
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+        Order order = TestDataProduct.builder().build().setUuid(null).buildOrder();
+        when(jsonSerializer.serializer(order)).thenReturn("Expected JSON String");
+        when(objectMapper.writeValueAsString(order)).thenReturn("Expected JSON String");
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         assertEquals(expected, actual);
     }
 
     @Test
-    void serializerWithProductsIsNull() throws JsonProcessingException, IllegalAccessException {
-        Order product = TestDataProduct.builder().build().setProducts(null).buildOrder();
-        when(jsonSerializer.serializer(product)).thenReturn("Expected JSON String");
-        when(objectMapper.writeValueAsString(product)).thenReturn("Expected JSON String");
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+    void serializerWithFirstNameIsNull() throws JsonProcessingException, IllegalAccessException {
+        Order order = TestDataProduct.builder().build().setFirstName(null).buildOrder();
+        when(jsonSerializer.serializer(order)).thenReturn("Expected JSON String");
+        when(objectMapper.writeValueAsString(order)).thenReturn("Expected JSON String");
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         assertEquals(expected, actual);
     }
 
     @Test
-    void serializerWithCreateDateIsNull() throws JsonProcessingException, IllegalAccessException {
-        Order product = TestDataProduct.builder().build().setOffsetDateTime(null).buildOrder();
-        when(jsonSerializer.serializer(product)).thenReturn("Expected JSON String");
-        when(objectMapper.writeValueAsString(product)).thenReturn("Expected JSON String");
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+    void serializerWithLastNameIsNull() throws JsonProcessingException, IllegalAccessException {
+        Order order = TestDataProduct.builder().build().setLastName(null).buildOrder();
+        when(jsonSerializer.serializer(order)).thenReturn("Expected JSON String");
+        when(objectMapper.writeValueAsString(order)).thenReturn("Expected JSON String");
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         assertEquals(expected, actual);
     }
+
+    @Test
+    void serializerWithDateBirthIsNull() throws JsonProcessingException, IllegalAccessException {
+        Order order = TestDataProduct.builder().build().setDateBirth(null).buildOrder();
+        when(jsonSerializer.serializer(order)).thenReturn("Expected JSON String");
+        when(objectMapper.writeValueAsString(order)).thenReturn("Expected JSON String");
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void serializerWithOrdersIsNull() throws JsonProcessingException, IllegalAccessException {
+        Order order = TestDataProduct.builder().build().setOrders(null).buildOrder();
+        when(jsonSerializer.serializer(order)).thenReturn("Expected JSON String");
+        when(objectMapper.writeValueAsString(order)).thenReturn("Expected JSON String");
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
+        assertEquals(expected, actual);
+    }
+
 
     @Test
     void deSerializer() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, InstantiationException {
-        Order product = TestDataProduct.builder().build().buildOrder();
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+        Order order = TestDataProduct.builder().build().buildOrder();
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         Order productActual = jsonSerializer.deSerializer(actual, Order.class);
         Order productExpected = objectMapper.readValue(expected, Order.class);
         assertEquals(productExpected, productActual);
+    }
+
+    @Test
+    void deSerializerWithEmptyObject() throws IllegalAccessException, InvocationTargetException,
+            NoSuchMethodException, InstantiationException {
+        Order expected = TestDataProduct.builder().build().buildOrder();
+        String actual = jsonSerializer.serializer(expected);
+        Order order = jsonSerializer.deSerializer(actual, Order.class);
+        assertNull(order);
     }
 
     @Test
     void deSerializerWithUUIDisNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, InstantiationException {
-        Order product = TestDataProduct.builder().build().setUuid(null).buildOrder();
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+        Order order = TestDataProduct.builder().build().setUuid(null).buildOrder();
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         Order productActual = jsonSerializer.deSerializer(actual, Order.class);
         Order productExpected = objectMapper.readValue(expected, Order.class);
         assertEquals(productExpected, productActual);
     }
 
     @Test
-    void deSerializerWithProductsIsNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
+    void deSerializerWithFirstNameIsNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, InstantiationException {
-        Order product = TestDataProduct.builder().build().setProducts(null).buildOrder();
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+        Order order = TestDataProduct.builder().build().setFirstName(null).buildOrder();
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         Order productActual = jsonSerializer.deSerializer(actual, Order.class);
         Order productExpected = objectMapper.readValue(expected, Order.class);
         assertEquals(productExpected, productActual);
     }
 
     @Test
-    void deSerializerWithCreateDateIsNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
+    void deSerializerWithLastNameIsNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, InstantiationException {
-        Order product = TestDataProduct.builder().build().setOffsetDateTime(null).buildOrder();
-        String actual = jsonSerializer.serializer(product);
-        String expected = objectMapper.writeValueAsString(product);
+        Order order = TestDataProduct.builder().build().setLastName(null).buildOrder();
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
+        Order productActual = jsonSerializer.deSerializer(actual, Order.class);
+        Order productExpected = objectMapper.readValue(expected, Order.class);
+        assertEquals(productExpected, productActual);
+    }
+
+    @Test
+    void deSerializerWithDateBirthIsNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
+            NoSuchMethodException, InstantiationException {
+        Order order = TestDataProduct.builder().build().setDateBirth(null).buildOrder();
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
+        Order productActual = jsonSerializer.deSerializer(actual, Order.class);
+        Order productExpected = objectMapper.readValue(expected, Order.class);
+        assertEquals(productExpected, productActual);
+    }
+
+    @Test
+    void deSerializerWithOrdersIsNull() throws JsonProcessingException, IllegalAccessException, InvocationTargetException,
+            NoSuchMethodException, InstantiationException {
+        Order order = TestDataProduct.builder().build().setOrders(null).buildOrder();
+        String actual = jsonSerializer.serializer(order);
+        String expected = objectMapper.writeValueAsString(order);
         Order productActual = jsonSerializer.deSerializer(actual, Order.class);
         Order productExpected = objectMapper.readValue(expected, Order.class);
         assertEquals(productExpected, productActual);
