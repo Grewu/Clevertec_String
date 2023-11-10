@@ -14,7 +14,11 @@ java {
     sourceCompatibility = JavaLanguageVersion.of(17)
     targetCompatibility = JavaLanguageVersion.of(17)
 }
-
+ext {
+    junitVersion = '5.9.2'
+    mockitoVersion = '5.6.0'
+    mapstructVersion = "1.5.5.Final"
+}
 repositories {
     mavenCentral()
 }
@@ -22,6 +26,15 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.testng:testng:7.7.0', "org.easytesting:fest-assert:1.4"
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.10.0'
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoVersion}"
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.7.1'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.10.1'
 }
 
 test {
