@@ -54,12 +54,16 @@ public class JsonSerializerCustomerTest {
                         "Expected Customer with null"
                 ),
                 Arguments.of(
-                        TestDataProduct.builder().build().setProductsList(null).buidCustomer(),
-                        "Expected Customer with products null"
+                        TestDataProduct.builder().build().setFirstName(null).buidCustomer(),
+                        "Expected Customer with firstName null"
                 ),
                 Arguments.of(
-                        TestDataProduct.builder().build().setOffsetDateTime(null).buidCustomer(),
-                        "Expected Customer with OffsetDateTime null"
+                        TestDataProduct.builder().build().setLastName(null).buidCustomer(),
+                        "Expected Customer with lastName null"
+                ),
+                Arguments.of(
+                        TestDataProduct.builder().build().setDateBirth(null).buidCustomer(),
+                        "Expected Customer with dateBirth null"
                 )
         );
     }

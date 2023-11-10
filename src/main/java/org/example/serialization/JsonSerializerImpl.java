@@ -1,6 +1,5 @@
 package org.example.serialization;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.entity.Customer;
 import org.example.entity.Order;
 import org.example.entity.Product;
@@ -80,6 +79,9 @@ public class JsonSerializerImpl implements JsonSerializer {
 
 
     private static LinkedHashMap<String, Object> parseJson(String jsonString) {
+        if (jsonString == null) {
+            throw new NullPointerException();
+        }
         LinkedHashMap<String, Object> jsonMap = new LinkedHashMap<>();
         jsonString = jsonString.trim();
         if (jsonString.startsWith("{") && jsonString.endsWith("}")) {
